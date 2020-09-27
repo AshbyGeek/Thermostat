@@ -1,0 +1,36 @@
+﻿<Window x:Class="Thermostat.Window"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Thermostat"
+        xmlns:views="clr-namespace:Thermostat.Views"
+        xmlns:viewModels="clr-namespace:Thermostat.ViewModels"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="600">
+    <Window.DataContext >
+        <viewModels:WindowViewModel/>
+    </Window.DataContext>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <DataTemplate DataType="{x:Type viewModels:HistoryViewModel}">
+            <views:HistoryView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:MainViewModel}">
+            <views:MainView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:ScreensaverViewModel}">
+            <views:ScreenSaver/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type viewModels:SettingsViewModel}">
+            <views:SettingsView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Button Content="Close" Visibility="{Binding IsNotMainView, Converter={StaticResource BoolToVisConverter}}" Command="{Binding ShowMainViewCommand}" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Top"/>
+        <ContentControl Content="{Binding CurrentViewModel}"/>
+
+
+    </Grid>
+</Window>
