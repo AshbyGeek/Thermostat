@@ -18,7 +18,7 @@ namespace Thermostat
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class Window : System.Windows.Window
+    public partial class Window : MahApps.Metro.Controls.MetroWindow
     {
         public Window()
         {

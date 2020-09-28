@@ -4,10 +4,34 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Thermostat.Views"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="600">
     <Grid>
-        <Slider HorizontalAlignment="Stretch" Margin="10,30,10,0" VerticalAlignment="Top" Height="30" Minimum="50" Maximum="90" SmallChange="1" TickFrequency="5" TickPlacement="BottomRight" Value="70" />
+        <mah:RangeSlider HorizontalAlignment="Stretch" 
+                         Margin="10,30,10,0" 
+                         VerticalAlignment="Top" 
+                         Height="30"
+                         Minimum="50" 
+                         Maximum="90" 
+                         LowerValue="{Binding LowSetPoint}" 
+                         UpperValue="{Binding HighSetPoint}"
+                         SmallChange="1"
+                         AutoToolTipPlacement="TopLeft"
+                         Interval="1"
+                         IsSnapToTickEnabled="True"
+                         Style="{DynamicResource MahApps.Styles.RangeSlider.Win10}">
+            <mah:RangeSlider.AutoToolTipRangeValuesTemplate>
+                <DataTemplate DataType="mah:RangeSliderAutoTooltipValues">
+                    <UniformGrid Columns="2" Rows="2">
+                        <TextBlock HorizontalAlignment="Right" Text="From:" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding LowerValue, StringFormat='{}{0:N2}'}"/>
+                        <TextBlock HorizontalAlignment="Right" Text="To:" />
+                        <TextBlock HorizontalAlignment="Right" Text="{Binding UpperValue, StringFormat='{}{0:N2}'}"/>
+                    </UniformGrid>
+                </DataTemplate>
+            </mah:RangeSlider.AutoToolTipRangeValuesTemplate>
+        </mah:RangeSlider>
         
         <TextBlock HorizontalAlignment="Center" Text="65°" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="72" TextAlignment="Center"/>
         <Button Content="History" Command="{Binding OpenHistoryCommand}" HorizontalAlignment="Center" Margin="10,106,10,0" VerticalAlignment="Center" Width="100"/>
