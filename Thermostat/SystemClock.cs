@@ -8,7 +8,7 @@ namespace Thermostat.Models
 {
     public interface ISystemClock
     {
-        const int ResolutionMilliseconds = 1000;
+        int ResolutionMilliseconds { get; }
 
         event EventHandler<EventArgs> TimeTick;
 
@@ -17,15 +17,18 @@ namespace Thermostat.Models
 
     public class SystemClock : ISystemClock, IDisposable
     {
+        
         public SystemClock()
         {
-            _Timer = new Timer(ISystemClock.ResolutionMilliseconds)
+            _Timer = new Timer(ResolutionMilliseconds)
             {
                 AutoReset = true
             };
             _Timer.Elapsed += (s, e) => OnTimeTick();
             _Timer.Start();
         }
+
+        public int ResolutionMilliseconds { get; } = 1000;
 
         public DateTime Now => DateTime.Now;
 

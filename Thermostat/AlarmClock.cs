@@ -26,7 +26,7 @@ namespace Thermostat.Models
         private void Clock_TimeTick(object sender, EventArgs e)
         {
             var minTime = _Clock.Now;
-            var maxTime = minTime.AddMilliseconds(ISystemClock.ResolutionMilliseconds);
+            var maxTime = minTime.AddMilliseconds(_Clock.ResolutionMilliseconds);
 
             List<IGrouping<DateTime, Action>> groupList;
             lock(_AlertsLock)
