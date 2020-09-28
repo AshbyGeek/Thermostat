@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Thermostat.Models
 {
+    [Microsoft.EntityFrameworkCore.Owned]
     public class HvacSystem
     {
         /// <summary>

@@ -10,7 +10,7 @@ namespace Thermostat.HvacAlgorithms
         HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues);
     }
 
-    public abstract class HvacManager
+    public class HvacManager
     {
         public HvacManager(ISystemClock clock, ISystemIO systemIO)
         {
