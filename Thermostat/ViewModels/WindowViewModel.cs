@@ -1,15 +1,22 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using Thermostat.Models.Database;
 using Thermostat.Views;
 
 namespace Thermostat.ViewModels
 {
     public class WindowViewModel: BaseViewModel
     {
-        public WindowViewModel()
+        private readonly IServiceProvider _ServiceProvider;
+        private ThermostatContext _Db;
+
+        public WindowViewModel(IServiceProvider serviceProvider)
         {
+            _ServiceProvider = serviceProvider;
+
             MainViewModel = new MainViewModel(new DelegateCommand(ShowHistoryView), new DelegateCommand(ShowSettingsView));
             CurrentViewModel = MainViewModel;
 
@@ -37,7 +44,8 @@ namespace Thermostat.ViewModels
 
         private void ShowHistoryView()
         {
-            CurrentViewModel = new HistoryViewModel();
+            _Db = _ServiceProvider.GetService<ThermostatContext>();
+            CurrentViewModel = new HistoryViewModel(_Db);
         }
 
         private void ShowSettingsView()
@@ -48,6 +56,9 @@ namespace Thermostat.ViewModels
         private void ShowMainView()
         {
             CurrentViewModel = MainViewModel;
+
+            _Db?.Dispose();
+            _Db = null;
         }
         public ICommand ShowMainViewCommand { get; }
     }

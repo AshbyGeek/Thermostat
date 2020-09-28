@@ -4,6 +4,7 @@ using System;
 using Thermostat.Models;
 using Thermostat.Models.Database;
 using Thermostat.Properties;
+using Thermostat.ViewModels;
 
 namespace Thermostat
 {
@@ -26,6 +27,13 @@ namespace Thermostat
 
             App application = new App();
             application.InitializeComponent();
+            application.Startup += (s, e) =>
+            {
+                var window = new Window();
+                window.Show();
+                window.Activate();
+                window.DataContext = new WindowViewModel(serviceProvider);
+            };
             application.Run();
         }
     }

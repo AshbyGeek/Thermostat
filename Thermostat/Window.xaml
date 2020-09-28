@@ -9,9 +9,6 @@
         xmlns:viewModels="clr-namespace:Thermostat.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="600">
-    <Window.DataContext >
-        <viewModels:WindowViewModel/>
-    </Window.DataContext>
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
         <DataTemplate DataType="{x:Type viewModels:HistoryViewModel}">
