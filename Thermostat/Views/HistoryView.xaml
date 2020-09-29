@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Thermostat.Views"
-             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf" xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="600">
     <Grid>
@@ -20,11 +20,20 @@
             </ListView.ItemTemplate>
         </ListView>
         <Grid Grid.Column="1">
-            <lvc:CartesianChart Series="{Binding CurrentUsageHistorySettings.ChartSeries}">
-                
+            <Grid.RowDefinitions>
+                <RowDefinition Height="80"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <lvc:CartesianChart Series="{Binding ChartSeries}" Grid.Row="1">
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis LabelFormatter="{Binding DateFormatter}"/>
+                </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
-            <DatePicker HorizontalAlignment="Right" Margin="0,10,50,0" VerticalAlignment="Top" />
-            <DatePicker HorizontalAlignment="Right" Margin="0,10,154,0" VerticalAlignment="Top"/>
+
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,50,0" >
+                <mah:DateTimePicker SelectedDateTime="{Binding CurrentUsageHistorySettings.MinDate}" Margin="10" />
+                <mah:DateTimePicker SelectedDateTime="{Binding CurrentUsageHistorySettings.MaxDate}" Margin="10"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </UserControl>

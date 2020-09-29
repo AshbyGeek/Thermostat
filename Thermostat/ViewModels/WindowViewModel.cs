@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Thermostat.Models.Database;
 using Thermostat.Views;
 
@@ -45,7 +47,8 @@ namespace Thermostat.ViewModels
         private void ShowHistoryView()
         {
             _Db = _ServiceProvider.GetService<ThermostatContext>();
-            CurrentViewModel = new HistoryViewModel(_Db);
+            var clock = _ServiceProvider.GetService<Models.ISystemClock>();
+            CurrentViewModel = new HistoryViewModel(_Db, clock);
         }
 
         private void ShowSettingsView()

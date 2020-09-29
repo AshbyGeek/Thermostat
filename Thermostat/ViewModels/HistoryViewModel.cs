@@ -1,10 +1,14 @@
 ﻿using LiveCharts;
 using LiveCharts.Wpf;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using Thermostat.Models;
 using Thermostat.Models.Database;
 
 namespace Thermostat.ViewModels
@@ -13,88 +17,95 @@ namespace Thermostat.ViewModels
     {
         private ThermostatContext _Db;
 
-        public HistoryViewModel(ThermostatContext db)
+        public HistoryViewModel(ThermostatContext db, ISystemClock systemClock)
         {
             _Db = db;
-        }
 
-        public UsageHistorySettings CurrentUsageHistorySettings { get; } = new UsageHistorySettings();
-    }
-
-    public class DateModel
-    {
-        public DateTime DateTime { get; set; }
-
-        public double Value { get; set; }
-    }
-
-
-
-    public class UsageHistorySettings : BaseViewModel
-    {
-        public UsageHistorySettings()
-        {
             var dayConfig = LiveCharts.Configurations.Mappers.Xy<DateModel>()
-                                .X(dateModel => (double)dateModel.DateTime.Ticks / TimeSpan.FromSeconds(1).Ticks)
+                                .X(dateModel => (double)dateModel.DateTime.Ticks)
                                 .Y(dateModel => dateModel.Value);
+
+            DateFormatter = value => new DateTime((long)value).ToString("g");
+
             ChartSeries = new SeriesCollection(dayConfig);
 
+            CurrentUsageHistorySettings.PropertyChanged += (s, e) => UpdateAllCharts();
 
-            foreach (var dataset in DataSets)
+
+            foreach (var dataSet in CurrentUsageHistorySettings.DataSets)
             {
-                dataset.PropertyChanged += Dataset_PropertyChanged;
-                UpdateChart(dataset);
+                dataSet.PropertyChanged += (sender, e) =>
+                {
+                    if (e.PropertyName == nameof(DataSet.Enabled) || e.PropertyName == nameof(DataSet.Name))
+                    {
+                        UpdateChart((DataSet)sender);
+                    }
+                };
             }
+
+            UpdateAllCharts();
         }
 
-        private void Dataset_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void UpdateAllCharts()
         {
-            if (e.PropertyName == nameof(DataSet.Name) || e.PropertyName == nameof(DataSet.Enabled))
+            foreach (var dataSet in CurrentUsageHistorySettings.DataSets)
             {
-                var dataSet = (DataSet)sender;
                 UpdateChart(dataSet);
             }
         }
+
+        public UsageHistorySettings CurrentUsageHistorySettings { get; } = new UsageHistorySettings();
+
+        public SeriesCollection ChartSeries { get; }
+
+        public Func<double, string> DateFormatter { get; }
 
         private void UpdateChart(DataSet dataSet)
         {
             if (dataSet.Enabled)
             {
-                var series = new LineSeries()
+                var data = dataSet.QueryData(_Db, CurrentUsageHistorySettings.MinDate, CurrentUsageHistorySettings.MaxDate);
+                if (data.Count() > 0)
                 {
-                    Title = dataSet.Name,
-                    Values = new ChartValues<DateModel>
+                    if (dataSet.Series == null)
                     {
-                        new DateModel
+                        var series = new LineSeries()
                         {
-                            DateTime = DateTime.Now,
-                            Value = 72,
-                        },
-                        new DateModel
+                            Title = dataSet.Name,
+                            Values = new ChartValues<DateModel>(data),
+                        };
+                        ChartSeries.Add(series);
+                        dataSet.Series = series;
+                    }
+                    else
+                    {
+                        var currentValues = dataSet.Series.Values.Cast<DateModel>().ToList();
+
+                        var toAddFront = data.TakeWhile(x => x.DateTime < currentValues.First().DateTime);
+                        var toRemoveFront = currentValues.TakeWhile(x => x.DateTime < data.First().DateTime);
+
+                        var toAddBack = data.Reverse().TakeWhile(x => x.DateTime > currentValues.Last().DateTime).Reverse();
+                        var toRemoveBack = currentValues.Reverse<DateModel>().TakeWhile(x => x.DateTime > data.Last().DateTime).Reverse();
+
+                        for (int i = 0; i < toRemoveFront.Count(); i++)
                         {
-                            DateTime = DateTime.Now.AddSeconds(1),
-                            Value = 72,
-                        },
-                        new DateModel
+                            dataSet.Series.Values.RemoveAt(0);
+                        }
+                        for (int i = 0; i < toRemoveBack.Count(); i++)
                         {
-                            DateTime = DateTime.Now.AddSeconds(2),
-                            Value = 72,
-                        },
-                        new DateModel
+                            dataSet.Series.Values.RemoveAt(dataSet.Series.Values.Count - 1);
+                        }
+
+                        foreach (var value in toAddFront.Reverse())
                         {
-                            DateTime = DateTime.Now.AddSeconds(3),
-                            Value = 73,
-                        },
-                        new DateModel
+                            dataSet.Series.Values.Insert(0, value);
+                        }
+                        foreach (var value in toAddBack)
                         {
-                            DateTime = DateTime.Now.AddSeconds(4),
-                            Value = 73,
+                            dataSet.Series.Values.Add(value);
                         }
                     }
-                    //TODO: get real values
-                };
-                dataSet.Series = series;
-                ChartSeries.Add(series);
+                }
             }
             else
             {
@@ -106,9 +117,30 @@ namespace Thermostat.ViewModels
                 dataSet.Series = null;
             }
         }
+    }
 
-        public SeriesCollection ChartSeries { get; }
+    public struct DateModel : IEquatable<DateModel>
+    {
+        public DateModel(DateTime dateTime, double value)
+        {
+            DateTime = dateTime;
+            Value = value;
+        }
 
+        public DateTime DateTime { get; }
+
+        public double Value { get; }
+
+        public bool Equals([AllowNull] DateModel other)
+        {
+            return DateTime == other.DateTime;
+        }
+    }
+
+
+
+    public class UsageHistorySettings : BaseViewModel
+    {
         public DateTime MinDate
         {
             get => _MinDate;
@@ -121,7 +153,7 @@ namespace Thermostat.ViewModels
                 }
             }
         }
-        private DateTime _MinDate;
+        private DateTime _MinDate = DateTime.Today;
 
         public DateTime MaxDate
         {
@@ -130,17 +162,17 @@ namespace Thermostat.ViewModels
             {
                 if (_MaxDate != value)
                 {
-                    _MinDate = value;
+                    _MaxDate = value;
                     OnPropertyChanged();
                 }
             }
         }
-        private DateTime _MaxDate;
+        private DateTime _MaxDate = DateTime.Now;
 
         public IReadOnlyCollection<DataSet> DataSets { get; } = new Collection<DataSet>()
         {
-            new DataSet("Inside Temperature", true),
-            new DataSet("Outside Temperature", false),
+            new IndoorTemp(true),
+            new OutdoorTemp(false),
         };
     }
 
@@ -153,6 +185,9 @@ namespace Thermostat.ViewModels
         }
 
         public string Name { get; }
+
+        public virtual IEnumerable<DateModel> QueryData(ThermostatContext db, DateTime minDateTime, DateTime maxDateTime) => null;
+
 
         public bool Enabled
         {
@@ -181,5 +216,36 @@ namespace Thermostat.ViewModels
             }
         }
         private LineSeries _Series;
+    }
+
+    public class IndoorTemp : DataSet
+    {
+        public IndoorTemp(bool enabled = false) : base("Inside Temperature", enabled)
+        {
+        }
+
+        public override IEnumerable<DateModel> QueryData(ThermostatContext db, DateTime minDateTime, DateTime maxDateTime)
+        {
+            return db.HvacSensorHistory.Where(x => x.DateTime >= minDateTime && x.DateTime < maxDateTime)
+                                       .OrderBy(x => x.DateTime)
+                                       .AsEnumerable()
+                                       .Select(x => new DateModel(x.DateTime, x.Data.IndoorTemp));
+        }
+    }
+
+
+    public class OutdoorTemp : DataSet
+    {
+        public OutdoorTemp(bool enabled = false) : base("Outside Temperature", enabled)
+        {
+        }
+
+        public override IEnumerable<DateModel> QueryData(ThermostatContext db, DateTime minDateTime, DateTime maxDateTime)
+        {
+            return db.HvacSensorHistory.Where(x => x.DateTime >= minDateTime && x.DateTime < maxDateTime)
+                                       .OrderBy(x => x.DateTime)
+                                       .AsEnumerable()
+                                       .Select(x => new DateModel(x.DateTime, x.Data.OutdoorTemp));
+        }
     }
 }

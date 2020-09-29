@@ -5,6 +5,7 @@ using Thermostat.Models;
 using Thermostat.Models.Database;
 using Thermostat.Properties;
 using Thermostat.ViewModels;
+using Thermostat.Views;
 
 namespace Thermostat
 {
@@ -15,7 +16,7 @@ namespace Thermostat
         static void Main()
         {
             IServiceCollection services = new ServiceCollection();
-            services.AddDbContext<ThermostatContext>(options => options.UseSqlite(Settings.Default.DefaultConnection));
+            services.AddDbContext<ThermostatContext>(options => options.UseSqlite(Settings.Default.DefaultConnection), ServiceLifetime.Transient);
             services.AddSingleton<ISystemClock>(new SystemClock());
 
             var serviceProvider = services.BuildServiceProvider();
@@ -23,6 +24,38 @@ namespace Thermostat
             using (var db = serviceProvider.GetService<ThermostatContext>())
             {
                 db.Database.Migrate();
+
+                db.HvacSensorHistory.Add(new State<HvacSensors>()
+                {
+                    DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(20)),
+                    Data = new HvacSensors()
+                    {
+                        IndoorTemp = 72,
+                        OutdoorTemp = 90,
+                    }
+                });
+
+                db.HvacSensorHistory.Add(new State<HvacSensors>()
+                {
+                    DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(15)),
+                    Data = new HvacSensors()
+                    {
+                        IndoorTemp = 75.6,
+                        OutdoorTemp = 90.5,
+                    }
+                });
+
+                db.HvacSensorHistory.Add(new State<HvacSensors>()
+                {
+                    DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(5)),
+                    Data = new HvacSensors()
+                    {
+                        IndoorTemp = 70,
+                        OutdoorTemp = 84,
+                    }
+                });
+
+                db.SaveChanges();
             }
 
             App application = new App();
