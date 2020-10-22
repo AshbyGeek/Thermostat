@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Thermostat.Models
 {
     [Microsoft.EntityFrameworkCore.Owned]
-    public class HvacSystem
+    public class HvacSystem : IEquatable<HvacSystem>
     {
         /// <summary>
         /// Turns the A/C Compressor on or off via the Y wire.
@@ -39,7 +40,103 @@ namespace Thermostat.Models
         /// </value>
         public bool IsAuxHeat { get; set; } = false;
 
+        public override string ToString()
+        {
+            string str = "";
+            if (IsCooling)
+            {
+                str += "Cooling";
+            }
+            else if (IsHeating)
+            {
+                str += "Heating";
+                if (IsAuxHeat)
+                {
+                    str += " Lots";
+                }
+            }
 
+            if (IsFanRunning)
+            {
+                str += " And Blowing";
+            }
+
+            return str;
+        }
+
+
+        public bool Equals([AllowNull] HvacSystem other)
+        {
+            return !ReferenceEquals(other, null)
+                   && IsCooling == other.IsCooling
+                   && IsFanRunning == other.IsFanRunning
+                   && IsHeating == other.IsHeating
+                   && IsAuxHeat == other.IsAuxHeat;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as HvacSystem);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 0;
+            hash |=  (IsCooling     ? 1 : 0);
+            hash |= ((IsFanRunning  ? 1 : 0) << 1);
+            hash |= ((IsHeating     ? 1 : 0) << 2);
+            hash |= ((IsAuxHeat     ? 1 : 0) << 3);
+
+            return hash;
+        }
+
+        public static bool operator ==(HvacSystem obj1, object obj2)
+        {
+            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            {
+                return obj1.Equals(obj2);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool operator !=(HvacSystem obj1, object obj2)
+        {
+            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            {
+                return !obj1.Equals(obj2);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool operator ==(HvacSystem obj1, HvacSystem obj2)
+        {
+            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            {
+                return obj1.Equals(obj2);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static bool operator !=(HvacSystem obj1, HvacSystem obj2)
+        {
+            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            {
+                return !obj1.Equals(obj2);
+            }
+            else
+            {
+                return false;
+            }
+        }
 
 
         public static HvacSystem NormalCooling = new HvacSystem()
