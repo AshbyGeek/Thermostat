@@ -7,6 +7,7 @@ using Thermostat.Models.Database;
 
 namespace Thermostat.Migrations
 {
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [DbContext(typeof(ThermostatContext))]
     partial class ThermostatContextModelSnapshot : ModelSnapshot
     {
