@@ -5,6 +5,10 @@ using Thermostat.Models;
 
 namespace Thermostat
 {
+    /// <summary>
+    /// SystemIO Decorator that logs all values.
+    /// Not actually in use yet, may need to change approaches.
+    /// </summary>
     public class SystemIOLoggingDecorator: ISystemIO
     {
         private ISystemIO _BaseIO { get; }

@@ -7,6 +7,10 @@ using System.Text;
 
 namespace Thermostat.Models.Database
 {
+    /// <summary>
+    /// Associates a value with a date and time
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class State<T>
     {
         [Key]
@@ -15,6 +19,10 @@ namespace Thermostat.Models.Database
         public T Data { get; set; }
     }
 
+    /// <summary>
+    /// EntityFramework Context for the database.
+    /// Defines all data tables in the database.
+    /// </summary>
     public class ThermostatContext : DbContext
     {
         public ThermostatContext(DbContextOptions options) : base(options)

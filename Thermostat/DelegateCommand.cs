@@ -5,6 +5,10 @@ using System.Windows.Input;
 
 namespace Thermostat
 {
+    /// <summary>
+    /// Wraps an <see cref="Action"/> as an ICommand.
+    /// Actions in C# are basically the same as function pointers in C, but they look much nicer.
+    /// </summary>
     public class DelegateCommand : ICommand
     {
         private readonly Action Action;
@@ -37,8 +41,9 @@ namespace Thermostat
     }
 
 
-
-
+    /// <summary>
+    /// Fancier version of <see cref="DelegateCommand"/> that adds a single parameter to the function that is run.
+    /// </summary>
     public class DelegateCommand<TParameters> : ICommand
     {
         private readonly Action<TParameters> _Action;

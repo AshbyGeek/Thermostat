@@ -9,7 +9,11 @@ using Thermostat.Views;
 
 namespace Thermostat
 {
-
+    /// <summary>
+    /// Starting point of the whole application.
+    /// Sets up services like databasing (including migrations), the system clock
+    /// and then starts and shows the window
+    /// </summary>
     class EntryPoint
     {
         [STAThread]
@@ -21,10 +25,14 @@ namespace Thermostat
 
             var serviceProvider = services.BuildServiceProvider();
 
+            // Set up DB migrations after running the build ServiceProvider, because we need the DB to be able to migrate.
             using (var db = serviceProvider.GetService<ThermostatContext>())
             {
                 db.Database.Migrate();
 
+                //TODO: remove these bogus DEVELOPMENT values
+                // For temporary development purposes, add some values to the database that can 
+                // be viewed in history. Since we don't have any data to collect yet, make something up.
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(20)),
@@ -34,7 +42,6 @@ namespace Thermostat
                         OutdoorTemp = 90,
                     }
                 });
-
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(15)),
@@ -44,7 +51,6 @@ namespace Thermostat
                         OutdoorTemp = 90.5,
                     }
                 });
-
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(5)),
@@ -58,6 +64,7 @@ namespace Thermostat
                 db.SaveChanges();
             }
 
+            // Actually start the application
             App application = new App();
             application.InitializeComponent();
             application.Startup += (s, e) =>

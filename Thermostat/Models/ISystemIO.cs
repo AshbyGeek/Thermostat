@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Thermostat.Models
 {
+    /// <summary>
+    /// Represents the current state of the system, both input and output.
+    /// </summary>
     public interface ISystemIO
     {
         HvacSensors CurrentSensorValues { get; }

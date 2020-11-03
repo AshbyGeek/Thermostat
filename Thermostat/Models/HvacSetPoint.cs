@@ -4,7 +4,10 @@ using System.Text;
 
 namespace Thermostat.Models
 {
-    [Microsoft.EntityFrameworkCore.Owned]
+    /// <summary>
+    /// Represents the current state of the (user adjusted) temperature set-points.
+    /// </summary>
+    [Microsoft.EntityFrameworkCore.Owned] ///This little flag flattens the database by indicating that this class should be folded into the <see cref="Database.State{T}"/> wrapper.
     public class HvacSetPoint
     {
         /// <summary>

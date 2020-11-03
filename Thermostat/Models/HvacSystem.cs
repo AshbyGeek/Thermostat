@@ -5,7 +5,11 @@ using System.Text;
 
 namespace Thermostat.Models
 {
-    [Microsoft.EntityFrameworkCore.Owned]
+    /// <summary>
+    /// Represents the current state of the Hvac Equipment in the system.
+    /// Uses value based comparisons.
+    /// </summary>
+    [Microsoft.EntityFrameworkCore.Owned] ///This little flag flattens the database by indicating that this class should be folded into the <see cref="Database.State{T}"/> wrapper.
     public class HvacSystem : IEquatable<HvacSystem>
     {
         /// <summary>
@@ -65,6 +69,7 @@ namespace Thermostat.Models
             return str;
         }
 
+        #region Value Based Comparison Implementation
 
         public bool Equals([AllowNull] HvacSystem other)
         {
@@ -156,6 +161,10 @@ namespace Thermostat.Models
             }
         }
 
+        #endregion
+
+
+        #region Static Convenience Objects
 
         public static HvacSystem NormalCooling = new HvacSystem()
         {
@@ -170,5 +179,7 @@ namespace Thermostat.Models
         };
 
         public static HvacSystem Off = new HvacSystem();
+
+        #endregion
     }
 }
