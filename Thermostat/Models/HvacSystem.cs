@@ -40,6 +40,7 @@ namespace Thermostat.Models
         /// </value>
         public bool IsAuxHeat { get; set; } = false;
 
+        [ExcludeFromCodeCoverage]
         public override string ToString()
         {
             string str = "";
@@ -92,7 +93,12 @@ namespace Thermostat.Models
 
         public static bool operator ==(HvacSystem obj1, object obj2)
         {
-            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+            else if (!ReferenceEquals(obj1, null)) // using reference equals null prevents accidental infinite recursion
             {
                 return obj1.Equals(obj2);
             }
@@ -104,19 +110,27 @@ namespace Thermostat.Models
 
         public static bool operator !=(HvacSystem obj1, object obj2)
         {
-            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return false;
+            }
+            else if (!ReferenceEquals(obj1, null)) // using reference equals null prevents accidental infinite recursion
             {
                 return !obj1.Equals(obj2);
             }
             else
             {
-                return false;
+                return true;
             }
         }
 
         public static bool operator ==(HvacSystem obj1, HvacSystem obj2)
         {
-            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return true;
+            }
+            else if (!ReferenceEquals(obj1, null)) // using reference equals null prevents accidental infinite recursion
             {
                 return obj1.Equals(obj2);
             }
@@ -128,13 +142,17 @@ namespace Thermostat.Models
 
         public static bool operator !=(HvacSystem obj1, HvacSystem obj2)
         {
-            if (!ReferenceEquals(obj1, null) && !ReferenceEquals(obj1, obj2))
+            if (ReferenceEquals(obj1, obj2))
+            {
+                return false;
+            }
+            else if (!ReferenceEquals(obj1, null)) // using reference equals null prevents accidental infinite recursion
             {
                 return !obj1.Equals(obj2);
             }
             else
             {
-                return false;
+                return true;
             }
         }
 

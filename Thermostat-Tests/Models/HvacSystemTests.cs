@@ -54,6 +54,45 @@ namespace Thermostat_Tests.Models
         }
 
         [TestMethod]
+        public void StaticEquality_FirstArgIsNull()
+        {
+            HvacSystem obj1 = null;
+            HvacSystem obj2 = new HvacSystem();
+
+            Assert.IsFalse(obj1 == obj2);
+            Assert.IsTrue(obj1 != obj2);
+            Assert.IsFalse(obj1 == (object)obj2);
+            Assert.IsTrue(obj1 != (object)obj2);
+        }
+
+        [TestMethod]
+        public void StaticEquality_SecondArgIsNull()
+        {
+            HvacSystem obj1 = new HvacSystem();
+            HvacSystem obj2 = null;
+
+            Assert.IsFalse(obj1 == obj2);
+            Assert.IsTrue(obj1 != obj2);
+            Assert.IsFalse(obj1 == (object)obj2);
+            Assert.IsTrue(obj1 != (object)obj2);
+        }
+
+
+        [TestMethod]
+        public void StaticEquality_BothArgsAreNull()
+        {
+            HvacSystem obj1 = null;
+            HvacSystem obj2 = null;
+
+            Assert.IsTrue(obj1 == obj2);
+            Assert.IsFalse(obj1 != obj2);
+            Assert.IsTrue(obj1 == (object)obj2);
+            Assert.IsFalse(obj1 != (object)obj2);
+        }
+
+
+
+        [TestMethod]
         [DataRow(false, false, false, false)]
         [DataRow(false, false, false, true )]
         [DataRow(false, false, true,  false)]
