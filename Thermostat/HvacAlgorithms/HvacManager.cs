@@ -5,11 +5,6 @@ using Thermostat.Models;
 
 namespace Thermostat.HvacAlgorithms
 {
-    public interface IHvacAlgorithm
-    {
-        HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues);
-    }
-
     public class HvacManager
     {
         public HvacManager(ISystemClock clock, ISystemIO systemIO)

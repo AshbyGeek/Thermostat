@@ -5,14 +5,13 @@ using Thermostat.Models;
 
 namespace Thermostat.HvacAlgorithms
 {
-    public class AutoHeatCool : IHvacAlgorithm
+    public class NoHeatCool : IHvacAlgorithm
     {
-        public string Name => "Auto";
+        public string Name => "Off";
 
         public HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            return HvacSystem.Off;
         }
     }
 }

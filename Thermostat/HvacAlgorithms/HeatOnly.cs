@@ -7,6 +7,8 @@ namespace Thermostat.HvacAlgorithms
 {
     public class HeatOnly : IHvacAlgorithm
     {
+        public string Name => "Heat";
+
         public HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues)
         {
             //TODO: implement

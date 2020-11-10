@@ -7,6 +7,8 @@ namespace Thermostat.HvacAlgorithms
 {
     public class CoolOnly : IHvacAlgorithm
     {
+        public string Name => "Cool";
+
         public HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues)
         {
             if (currentSensorValues.IndoorTemp > currentSetPoint.MaxTemp)
