@@ -9,8 +9,15 @@ namespace Thermostat.HvacAlgorithms
     {
         public HvacSystem GetNewSystemState(HvacSetPoint currentSetPoint, HvacSensors currentSensorValues)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            if (currentSensorValues.IndoorTemp > currentSetPoint.MaxTemp)
+            { return HvacSystem.NormalCooling; }
+
+            else if (currentSensorValues.IndoorTemp < currentSetPoint.MinTemp)
+            { return HvacSystem.NormalHeating; }
+
+            else
+                return HvacSystem.Off;
+            
         }
     }
-}
+} 

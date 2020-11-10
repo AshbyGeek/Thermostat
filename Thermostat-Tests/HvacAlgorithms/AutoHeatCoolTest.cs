@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Thermostat.HvacAlgorithms;
 using Thermostat.Models;
@@ -12,16 +14,16 @@ namespace Thermostat_Tests.HvacAlgorithms
     {
         [DataTestMethod]
         //      indoor, outdoor,  max,  min,    cool,    heat
-        [DataRow( 85,      99,     50,   45,   false,   false , DisplayName = "Temp 1 - cool set way low")]
-        [DataRow( 85,      99,     80,   55,   false,   false , DisplayName = "Temp 1 - cool set a little low")]
+        [DataRow( 85,      99,     50,   45,   true,   false , DisplayName = "Temp 1 - cool set way low")]
+        [DataRow( 85,      99,     80,   55,   true,   false , DisplayName = "Temp 1 - cool set a little low")]
         [DataRow( 85,      99,     85,   55,   false,   false , DisplayName = "Temp 1 - cool set on temp")]
-        [DataRow( 85,      99,     86,   55,   true ,   false , DisplayName = "Temp 1 - cool a little high")]
-        [DataRow( 85,      99,     99,   55,   true ,   false , DisplayName = "Temp 1 - cool a lot high")]
-        [DataRow( 65,      65,     40,   30,   false,   false , DisplayName = "Temp 2 - cool set way low")]
-        [DataRow( 65,      65,     64,   55,   false,   false , DisplayName = "Temp 2 - cool set a little low")]
+        [DataRow( 85,      99,     86,   55,   false ,   false , DisplayName = "Temp 1 - cool a little high")]
+        [DataRow( 99,      85,     99,   55,   false,   false, DisplayName = "Temp 1 - cool a lot high")]
+        [DataRow( 65,      65,     40,   30,   true,   false, DisplayName = "Temp 2 - cool set way low")]
+        [DataRow( 65,      65,     64,   55,   true,   false , DisplayName = "Temp 2 - cool set a little low")]
         [DataRow( 65,      65,     65,   55,   false,   false , DisplayName = "Temp 2 - cool set on temp")]
-        [DataRow( 65,      65,     67,   55,   true ,   false , DisplayName = "Temp 2 - cool a little high")]
-        [DataRow( 65,      65,     99,   55,   true ,   false , DisplayName = "Temp 2 - cool a lot high")]
+        [DataRow( 65,      67,     65,   55,   false ,   false , DisplayName = "Temp 2 - cool a little high")]
+        [DataRow( 65,      99,     65,   55,   false ,   false , DisplayName = "Temp 2 - cool a lot high")]
         [DataRow( 55,      50,     99,   30,   false,   false , DisplayName = "Temp 3 - heat set way low")]
         [DataRow( 55,      50,     99,   54,   false,   false , DisplayName = "Temp 3 - heat set a little low")]
         [DataRow( 55,      50,     99,   55,   false,   false , DisplayName = "Temp 3 - heat set on temp")]
