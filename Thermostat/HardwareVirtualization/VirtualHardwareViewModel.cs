@@ -19,10 +19,7 @@ namespace Thermostat.HardwareVirtualization
         public double OutdoorTemp
         {
             get => System.CurrentSensorValues.OutdoorTemp;
-            set 
-            {
-                System.CurrentSensorValues = new Models.HvacSensors(System.CurrentSensorValues, outdoorTemp: value);
-            }
+            set => System.CurrentSensorValues.OutdoorTemp = value;
         }
 
         public VirtualHardwareViewModel()

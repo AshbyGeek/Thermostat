@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Thermostat.HardwareVirtualization;
+using Thermostat.HvacAlgorithms;
 using Thermostat.Models;
 using Thermostat.Models.Database;
 using Thermostat.Properties;
@@ -16,12 +18,35 @@ namespace Thermostat
     /// </summary>
     class EntryPoint
     {
+        static readonly VirtualClock Clock = new VirtualClock();
+        static readonly VirtualSystem System = new VirtualSystem(Clock);
+
         [STAThread]
         static void Main()
         {
             IServiceCollection services = new ServiceCollection();
             services.AddDbContext<ThermostatContext>(options => options.UseSqlite(Settings.Default.DefaultConnection), ServiceLifetime.Transient);
-            services.AddSingleton<ISystemClock>(new SystemClock());
+            services.AddSingleton<Func<ThermostatContext>>(x => x.GetService<ThermostatContext>); // Perhaps too clever, this creates a "service" that is simply a factory method for the database context
+
+            // Add services for hardware
+            services.AddSingleton<ISystemClock>(Clock);
+            services.AddSingleton<ISystemIO>(System);
+
+            // Add hvac modes
+            services.AddSingleton<IHvacAlgorithm, AutoHeatCool>();
+            services.AddSingleton<IHvacAlgorithm, NoHeatCool>();
+            services.AddSingleton<IHvacAlgorithm, HeatOnly>();
+            services.AddSingleton<IHvacAlgorithm, CoolOnly>();
+
+            // Add services for thermostat
+            services.AddSingleton<IHvacManager, HvacManager>();
+            services.AddSingleton<WindowViewModel>();
+            services.AddSingleton<IChangeViewCommandProvider>(x => x.GetService<WindowViewModel>());
+            services.AddTransient<MainViewModel>();
+            services.AddTransient<ScreensaverViewModel>();
+            services.AddTransient<SettingsViewModel>();
+            services.AddTransient<HistoryViewModel>();
+
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -36,43 +61,44 @@ namespace Thermostat
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(20)),
-                    Data = new HvacSensors()
-                    {
-                        IndoorTemp = 72,
-                        OutdoorTemp = 90,
-                    }
+                    Data = new HvacSensors(72, 90),
                 });
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(15)),
-                    Data = new HvacSensors()
-                    {
-                        IndoorTemp = 75.6,
-                        OutdoorTemp = 90.5,
-                    }
+                    Data = new HvacSensors(75.6, 90.5)
                 });
                 db.HvacSensorHistory.Add(new State<HvacSensors>()
                 {
                     DateTime = DateTime.Now.Subtract(TimeSpan.FromMinutes(5)),
-                    Data = new HvacSensors()
-                    {
-                        IndoorTemp = 70,
-                        OutdoorTemp = 84,
-                    }
+                    Data = new HvacSensors(70, 84)
                 });
 
                 db.SaveChanges();
             }
+
 
             // Actually start the application
             App application = new App();
             application.InitializeComponent();
             application.Startup += (s, e) =>
             {
-                var window = new Window();
+                // Start the hardware simulation and its associated window
+                var virtualVM = new VirtualHardwareViewModel(System, Clock);
+                var virtualWindow = new Window
+                {
+                    Content = new VirtualHardwareView(),
+                    DataContext = virtualVM
+                };
+                virtualWindow.Show();
+                virtualWindow.Activate();
+
+                var window = new Window
+                {
+                    DataContext = serviceProvider.GetService<WindowViewModel>()
+                };
                 window.Show();
                 window.Activate();
-                window.DataContext = new WindowViewModel(serviceProvider);
             };
             application.Run();
         }

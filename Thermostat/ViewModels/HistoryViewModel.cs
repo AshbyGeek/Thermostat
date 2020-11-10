@@ -12,32 +12,36 @@ namespace Thermostat.ViewModels
 {
     public class HistoryViewModel : BaseViewModel
     {
-        private ThermostatContext _Db;
+        private Func<ThermostatContext> _DbContextFactoryMethod;
 
-        public HistoryViewModel(ThermostatContext db, ISystemClock systemClock)
+        public HistoryViewModel(Func<ThermostatContext> dbContextFactoryMethod)
         {
-            _Db = db;
+            _DbContextFactoryMethod = dbContextFactoryMethod;
 
-            var dayConfig = LiveCharts.Configurations.Mappers.Xy<DateModel>()
-                                .X(dateModel => (double)dateModel.DateTime.Ticks)
-                                .Y(dateModel => dateModel.Value);
-
-            DateFormatter = value => new DateTime((long)value).ToString("g");
-
-            ChartSeries = new SeriesCollection(dayConfig);
-
-            CurrentUsageHistorySettings.PropertyChanged += (s, e) => UpdateAllCharts();
-
-
-            foreach (var dataSet in CurrentUsageHistorySettings.DataSets)
+            using (var _Db = _DbContextFactoryMethod.Invoke())
             {
-                dataSet.PropertyChanged += (sender, e) =>
+
+                var dayConfig = LiveCharts.Configurations.Mappers.Xy<DateModel>()
+                                    .X(dateModel => (double)dateModel.DateTime.Ticks)
+                                    .Y(dateModel => dateModel.Value);
+
+                DateFormatter = value => new DateTime((long)value).ToString("g");
+
+                ChartSeries = new SeriesCollection(dayConfig);
+
+                CurrentUsageHistorySettings.PropertyChanged += (s, e) => UpdateAllCharts();
+
+
+                foreach (var dataSet in CurrentUsageHistorySettings.DataSets)
                 {
-                    if (e.PropertyName == nameof(DataSet.Enabled) || e.PropertyName == nameof(DataSet.Name))
+                    dataSet.PropertyChanged += (sender, e) =>
                     {
-                        UpdateChart((DataSet)sender);
-                    }
-                };
+                        if (e.PropertyName == nameof(DataSet.Enabled) || e.PropertyName == nameof(DataSet.Name))
+                        {
+                            UpdateChart((DataSet)sender);
+                        }
+                    };
+                }
             }
 
             UpdateAllCharts();
@@ -61,45 +65,48 @@ namespace Thermostat.ViewModels
         {
             if (dataSet.Enabled)
             {
-                var data = dataSet.QueryData(_Db, CurrentUsageHistorySettings.MinDate, CurrentUsageHistorySettings.MaxDate);
-                if (data.Count() > 0)
+                using (var _Db = _DbContextFactoryMethod.Invoke())
                 {
-                    if (dataSet.Series == null)
+                    var data = dataSet.QueryData(_Db, CurrentUsageHistorySettings.MinDate, CurrentUsageHistorySettings.MaxDate);
+                    if (data.Count() > 0)
                     {
-                        var series = new LineSeries()
+                        if (dataSet.Series == null)
                         {
-                            Title = dataSet.Name,
-                            Values = new ChartValues<DateModel>(data),
-                        };
-                        ChartSeries.Add(series);
-                        dataSet.Series = series;
-                    }
-                    else
-                    {
-                        var currentValues = dataSet.Series.Values.Cast<DateModel>().ToList();
-
-                        var toAddFront = data.TakeWhile(x => x.DateTime < currentValues.First().DateTime);
-                        var toRemoveFront = currentValues.TakeWhile(x => x.DateTime < data.First().DateTime);
-
-                        var toAddBack = data.Reverse().TakeWhile(x => x.DateTime > currentValues.Last().DateTime).Reverse();
-                        var toRemoveBack = currentValues.Reverse<DateModel>().TakeWhile(x => x.DateTime > data.Last().DateTime).Reverse();
-
-                        for (int i = 0; i < toRemoveFront.Count(); i++)
-                        {
-                            dataSet.Series.Values.RemoveAt(0);
+                            var series = new LineSeries()
+                            {
+                                Title = dataSet.Name,
+                                Values = new ChartValues<DateModel>(data),
+                            };
+                            ChartSeries.Add(series);
+                            dataSet.Series = series;
                         }
-                        for (int i = 0; i < toRemoveBack.Count(); i++)
+                        else
                         {
-                            dataSet.Series.Values.RemoveAt(dataSet.Series.Values.Count - 1);
-                        }
+                            var currentValues = dataSet.Series.Values.Cast<DateModel>().ToList();
 
-                        foreach (var value in toAddFront.Reverse())
-                        {
-                            dataSet.Series.Values.Insert(0, value);
-                        }
-                        foreach (var value in toAddBack)
-                        {
-                            dataSet.Series.Values.Add(value);
+                            var toAddFront = data.TakeWhile(x => x.DateTime < currentValues.First().DateTime);
+                            var toRemoveFront = currentValues.TakeWhile(x => x.DateTime < data.First().DateTime);
+
+                            var toAddBack = data.Reverse().TakeWhile(x => x.DateTime > currentValues.Last().DateTime).Reverse();
+                            var toRemoveBack = currentValues.Reverse<DateModel>().TakeWhile(x => x.DateTime > data.Last().DateTime).Reverse();
+
+                            for (int i = 0; i < toRemoveFront.Count(); i++)
+                            {
+                                dataSet.Series.Values.RemoveAt(0);
+                            }
+                            for (int i = 0; i < toRemoveBack.Count(); i++)
+                            {
+                                dataSet.Series.Values.RemoveAt(dataSet.Series.Values.Count - 1);
+                            }
+
+                            foreach (var value in toAddFront.Reverse())
+                            {
+                                dataSet.Series.Values.Insert(0, value);
+                            }
+                            foreach (var value in toAddBack)
+                            {
+                                dataSet.Series.Values.Add(value);
+                            }
                         }
                     }
                 }

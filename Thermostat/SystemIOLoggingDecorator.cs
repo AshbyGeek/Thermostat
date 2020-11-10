@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using Thermostat.Models;
 
@@ -15,7 +16,7 @@ namespace Thermostat
 
         public HvacSensors CurrentSensorValues => _BaseIO.CurrentSensorValues;
 
-        public HvacSystem CurrentSystemState { set => _BaseIO.CurrentSystemState = value; }
+        public HvacSystem CurrentSystemState => _BaseIO.CurrentSystemState;
 
         public SystemIOLoggingDecorator(ISystemIO baseIO)
         {

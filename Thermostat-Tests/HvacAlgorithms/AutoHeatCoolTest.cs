@@ -31,17 +31,9 @@ namespace Thermostat_Tests.HvacAlgorithms
         {
             var alg = new AutoHeatCool();
 
-            var setPoint = new HvacSetPoint()
-            {
-                MaxTemp = maxTemp,
-                MinTemp = minTemp,
-            };
+            var setPoint = new HvacSetPoint(maxTemp, minTemp);
 
-            HvacSensors sensors = new HvacSensors()
-            {
-                IndoorTemp = indoorTemp,
-                OutdoorTemp = outdoorTemp,
-            };
+            HvacSensors sensors = new HvacSensors(indoorTemp: indoorTemp, outdoorTemp: outdoorTemp);
 
             var newSystemState = alg.GetNewSystemState(setPoint, sensors);
 

@@ -4,9 +4,11 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Thermostat.Views"
+             xmlns:localVM="clr-namespace:Thermostat.ViewModels"
              xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="600">
+             d:DesignHeight="450" d:DesignWidth="600"
+             d:DataContext="{d:DesignInstance localVM:MainViewModel}">
     <Grid>
         <mah:RangeSlider HorizontalAlignment="Stretch" 
                          Margin="10,30,10,0" 
@@ -32,13 +34,11 @@
                 </DataTemplate>
             </mah:RangeSlider.AutoToolTipRangeValuesTemplate>
         </mah:RangeSlider>
-        
-        <TextBlock HorizontalAlignment="Center" Text="65°" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="72" TextAlignment="Center"/>
+
+        <TextBlock HorizontalAlignment="Center" Text="{Binding CurrentTemperature, StringFormat=0.0°}" TextWrapping="Wrap" VerticalAlignment="Center" FontSize="72" TextAlignment="Center"/>
         <Button Content="History" Command="{Binding OpenHistoryCommand}" HorizontalAlignment="Center" Margin="10,106,10,0" VerticalAlignment="Center" Width="100"/>
-        
-        <ComboBox HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Width="120">
-            <ComboBoxItem IsSelected="True">HeatOnly</ComboBoxItem>
-        </ComboBox>
+
+        <ComboBox HorizontalAlignment="Left" Margin="10" VerticalAlignment="Bottom" Width="120" ItemsSource="{Binding HvacModes}" DisplayMemberPath="Name" SelectedValue="{Binding CurrentMode}" />
         <Button Content="Settings" Command="{Binding OpenSettingsCommand}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Width="60" Height="60"/>
 
     </Grid>

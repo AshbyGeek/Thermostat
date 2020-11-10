@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace Thermostat.Models
@@ -11,6 +12,6 @@ namespace Thermostat.Models
     {
         HvacSensors CurrentSensorValues { get; }
 
-        HvacSystem CurrentSystemState { set; }
+        HvacSystem CurrentSystemState { get; }
     }
 }

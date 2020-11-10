@@ -22,34 +22,9 @@ namespace Thermostat.HardwareVirtualization
 
         public ISystemClock Clock { get; }
 
-        public HvacSensors CurrentSensorValues
-        {
-            get => _CurrentSensorValues;
-            set
-            {
-                if (_CurrentSensorValues != value)
-                {
-                    _CurrentSensorValues = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        private HvacSensors _CurrentSensorValues = new HvacSensors(70, 80);
+        public HvacSensors CurrentSensorValues { get; } = new HvacSensors(70, 80);
 
-        public HvacSystem CurrentSystemState 
-        {
-            get => _CurrentSystemState;
-            set
-            {
-                if (_CurrentSystemState != value)
-                {
-                    _CurrentSystemState = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        private HvacSystem _CurrentSystemState = new HvacSystem();
-
+        public HvacSystem CurrentSystemState { get; } = new HvacSystem();
 
 
         public double HeatTransferRate
@@ -91,10 +66,7 @@ namespace Thermostat.HardwareVirtualization
             var tempDir = (CurrentSensorValues.OutdoorTemp - CurrentSensorValues.IndoorTemp) / Math.Abs(CurrentSensorValues.OutdoorTemp - CurrentSensorValues.IndoorTemp);
             newTemp += HeatTransferRate * tempDir / 60;
 
-            if (newTemp != CurrentSensorValues.IndoorTemp)
-            {
-                CurrentSensorValues = new HvacSensors(CurrentSensorValues, indoorTemp: newTemp);
-            }
+            CurrentSensorValues.IndoorTemp = newTemp;
         }
 
 

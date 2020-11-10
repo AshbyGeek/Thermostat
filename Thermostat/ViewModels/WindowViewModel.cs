@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 using System.Windows.Media.Animation;
+using Thermostat.HvacAlgorithms;
 using Thermostat.Models.Database;
 using Thermostat.Views;
 
@@ -13,12 +14,22 @@ namespace Thermostat.ViewModels
     /// <summary>
     /// ViewModel for the base window, which manages the different views
     /// </summary>
-    public class WindowViewModel: BaseViewModel
+    public class WindowViewModel: BaseViewModel, IChangeViewCommandProvider
     {
-        private readonly IServiceProvider _ServiceProvider;
-        private readonly MainViewModel MainViewModel; // need to keep track of this guy cause he's important
+        private MainViewModel MainVM
+        {
+            get
+            {
+                if (_MainVM is null)
+                {
+                    _MainVM = _ServiceProvider.GetService<MainViewModel>();
+                }
+                return _MainVM;
+            }
+        }
+        private MainViewModel _MainVM;
 
-        private ThermostatContext _Db; //
+        private readonly IServiceProvider _ServiceProvider;
 
         /// <summary>
         /// 
@@ -28,10 +39,10 @@ namespace Thermostat.ViewModels
         {
             _ServiceProvider = serviceProvider;
 
-            MainViewModel = new MainViewModel(new DelegateCommand(ShowHistoryView), new DelegateCommand(ShowSettingsView));
-            CurrentViewModel = MainViewModel;
-
             ShowMainViewCommand = new DelegateCommand(ShowMainView);
+            ShowHistoryViewCommand = new DelegateCommand(ShowHistoryView);
+            ShowSettingsViewCommand = new DelegateCommand(ShowSettingsView);
+            ShowScreenSaverCommand = new DelegateCommand(ShowScreenSaver);
         }
 
         /// <summary>
@@ -40,7 +51,14 @@ namespace Thermostat.ViewModels
         /// </summary>
         public BaseViewModel CurrentViewModel
         {
-            get => _CurrentViewModel;
+            get
+            {
+                if (_CurrentViewModel is null)
+                {
+                    _CurrentViewModel = MainVM;
+                }
+                return _CurrentViewModel;
+            }
             set
             {
                 if (_CurrentViewModel != value)
@@ -51,46 +69,33 @@ namespace Thermostat.ViewModels
                 }
             }
         }
-        private BaseViewModel _CurrentViewModel;
+        private BaseViewModel? _CurrentViewModel;
 
-        public bool IsNotMainView => CurrentViewModel != MainViewModel;
+        public bool IsNotMainView => CurrentViewModel != MainVM;
 
-        public ICommand ShowMainViewCommand { get; }
 
         /// <summary>
         /// Shows the History View.
         /// Backing function for an ICommand.
         /// </summary>
-        private void ShowHistoryView()
-        {
-            _Db = _ServiceProvider.GetService<ThermostatContext>();
-            var clock = _ServiceProvider.GetService<Models.ISystemClock>();
-            CurrentViewModel = new HistoryViewModel(_Db, clock);
-
-            // Note that ordinarily we would need to dispose of the _Db, but in this case the HistoryView needs him until that view is closed
-            // EntityFramework leans towards short lived database contexts, so we should dispose of it as soon as is reasonable
-        }
+        private void ShowHistoryView() => CurrentViewModel = _ServiceProvider.GetService<HistoryViewModel>();
+        public ICommand ShowHistoryViewCommand { get; }
 
         /// <summary>
         /// Shows the Settings View.
         /// Backing function for an ICommand.
         /// </summary>
-        private void ShowSettingsView()
-        {
-            CurrentViewModel = new SettingsViewModel();
-        }
+        private void ShowSettingsView() => CurrentViewModel = _ServiceProvider.GetService<SettingsViewModel>();
+        public ICommand ShowSettingsViewCommand { get; }
 
         /// <summary>
         /// Shows the main view.
         /// Backing function for an ICommand.
         /// </summary>
-        private void ShowMainView()
-        {
-            CurrentViewModel = MainViewModel;
+        private void ShowMainView() => CurrentViewModel = MainVM;
+        public ICommand ShowMainViewCommand { get; }
 
-            // Dispose of the database, just in case the old view used the database
-            _Db?.Dispose();
-            _Db = null;
-        }
+        private void ShowScreenSaver() => CurrentViewModel = _ServiceProvider.GetService<ScreensaverViewModel>();
+        public ICommand ShowScreenSaverCommand { get; }
     }
 }

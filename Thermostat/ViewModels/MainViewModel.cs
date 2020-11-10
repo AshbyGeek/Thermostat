@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
+using Thermostat.HvacAlgorithms;
+using Thermostat.Models;
 
 namespace Thermostat.ViewModels
 {
@@ -10,12 +12,24 @@ namespace Thermostat.ViewModels
     /// </summary>
     public class MainViewModel: BaseViewModel
     {
-        public MainViewModel(ICommand openHistory, ICommand openSettings)
+        public MainViewModel(IChangeViewCommandProvider changeViewCommandProvider, IHvacManager hvacManager, ISystemIO systemIO)
         {
             // Dependency injection for these commands, makes this class simpler and more self contained.
-            OpenHistoryCommand = openHistory;
-            OpenSettingsCommand = openSettings;
+            OpenHistoryCommand = changeViewCommandProvider.ShowHistoryViewCommand;
+            OpenSettingsCommand = changeViewCommandProvider.ShowSettingsViewCommand;
+
+            _SystemIO = systemIO;
+            _SystemIO.CurrentSensorValues.PropertyChanged += CurrentSensorValues_PropertyChanged;
+
+            _HvacManager = hvacManager;
+            _HvacManager.PropertyChanged += HvacManager_PropertyChanged;
+            _HvacManager.CurrentSetPoint.PropertyChanged += CurrentSetPoint_PropertyChanged;
         }
+
+        private IHvacManager _HvacManager { get; }
+
+        private ISystemIO _SystemIO { get; }
+
 
         /// <summary>
         /// Opens <see cref="Views.HistoryView"/>
@@ -27,40 +41,64 @@ namespace Thermostat.ViewModels
         /// </summary>
         public ICommand OpenSettingsCommand { get; }
 
+        public IReadOnlyList<IHvacAlgorithm> HvacModes => _HvacManager.ValidModes;
+
+        public IHvacAlgorithm CurrentMode
+        {
+            get => _HvacManager.CurrentHvacAlgorithm;
+            set => _HvacManager.CurrentHvacAlgorithm = value;
+        }
+
         /// <summary>
         /// The min allowable temperature.
         /// Used by autoHeatCool and HeatOnly algorithms
         /// </summary>
-        public int LowSetPoint 
+        public double LowSetPoint
         {
-            get => _LowSetPoint;
-            set
-            {
-                if (_LowSetPoint != value)
-                {
-                    _LowSetPoint = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => _HvacManager.CurrentSetPoint.MinTemp;
+            set => _HvacManager.CurrentSetPoint.MinTemp = value;
         }
-        private int _LowSetPoint = 70;
 
         /// <summary>
         /// The max allowable temperature.
         /// Used by AutoHeatCool and CoolOnly algorithms
         /// </summary>
-        public int HighSetPoint
+        public double HighSetPoint
         {
-            get => _HighSetPoint;
-            set
+            get => _HvacManager.CurrentSetPoint.MaxTemp;
+            set => _HvacManager.CurrentSetPoint.MaxTemp = value;
+        }
+
+        public double CurrentTemperature => _SystemIO.CurrentSensorValues.IndoorTemp;
+
+
+
+
+        private void CurrentSensorValues_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(_SystemIO.CurrentSensorValues.IndoorTemp))
             {
-                if (_HighSetPoint != value)
-                {
-                    _HighSetPoint = value;
-                    OnPropertyChanged();
-                }
+                OnPropertyChanged(nameof(CurrentTemperature));
             }
         }
-        private int _HighSetPoint = 70;
+        private void HvacManager_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(_HvacManager.CurrentHvacAlgorithm))
+            {
+                OnPropertyChanged(nameof(CurrentMode));
+            }
+        }
+
+        private void CurrentSetPoint_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(_HvacManager.CurrentSetPoint.MinTemp))
+            {
+                OnPropertyChanged(nameof(LowSetPoint));
+            }
+            if (e.PropertyName == nameof(_HvacManager.CurrentSetPoint.MaxTemp))
+            {
+                OnPropertyChanged(nameof(HighSetPoint));
+            }
+        }
     }
 }
