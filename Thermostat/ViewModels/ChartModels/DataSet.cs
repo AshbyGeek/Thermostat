@@ -48,7 +48,7 @@ namespace Thermostat.ViewModels
         }
         private bool _Enabled;
 
-        public LineSeries Series
+        public LineSeries? Series
         {
             get => _Series;
             set
@@ -60,6 +60,6 @@ namespace Thermostat.ViewModels
                 }
             }
         }
-        private LineSeries _Series;
+        private LineSeries? _Series;
     }
 }

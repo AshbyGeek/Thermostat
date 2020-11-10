@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Timers;
 
 namespace Thermostat.Models
 {
+    public interface IAlarmClock
+    {
+        DateTime Now { get; }
+
+        void AddAlert(DateTime time, Action callback);
+        void RemoveAlert(DateTime time, Action callback);
+    }
+
     /// <summary>
     /// Allows scheduling of alerts at specific times in the future.
     /// Has a resolution of 1 second.
     /// </summary>
-    public class AlarmClock
+    public class AlarmClock : IAlarmClock
     {
         private readonly Lookup<DateTime, Action> _Alerts = new Lookup<DateTime, Action>();
         private readonly object _AlertsLock = new object();
@@ -23,23 +32,23 @@ namespace Thermostat.Models
             _Clock.TimeTick += Clock_TimeTick;
         }
 
-        private void Clock_TimeTick(object sender, EventArgs e)
+        private void Clock_TimeTick(object? sender, EventArgs e)
         {
             var minTime = _Clock.Now;
             var maxTime = minTime.AddMilliseconds(_Clock.ResolutionMilliseconds);
 
             List<IGrouping<DateTime, Action>> groupList;
-            lock(_AlertsLock)
+            lock (_AlertsLock)
             {
                 groupList = _Alerts.ToList();
             }
 
-            foreach(var group in groupList)
+            foreach (var group in groupList)
             {
                 // Since our timer only has a resolution of 1 second, make sure that we catch all such 
                 if (group.Key >= minTime && group.Key < maxTime)
                 {
-                    foreach(var action in group)
+                    foreach (var action in group)
                     {
                         try
                         {
@@ -74,7 +83,7 @@ namespace Thermostat.Models
         }
     }
 
-    internal class Lookup<Tkey, TValue> : ILookup<Tkey, TValue>
+    internal class Lookup<Tkey, TValue> : ILookup<Tkey, TValue> where Tkey : notnull
     {
         #region Accessors
         public int Count => _Dict.Sum(x => x.Value.Count);

@@ -12,9 +12,9 @@ namespace Thermostat
     public class DelegateCommand : ICommand
     {
         private readonly Action Action;
-        private readonly Func<bool> CanExecuteFunc;
+        private readonly Func<bool>? CanExecuteFunc;
 
-        public DelegateCommand(Action action, Func<bool> canExecute = null)
+        public DelegateCommand(Action action, Func<bool>? canExecute = null)
         {
             Action = action;
             CanExecuteFunc = canExecute;
@@ -27,7 +27,7 @@ namespace Thermostat
 
 
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
@@ -47,9 +47,9 @@ namespace Thermostat
     public class DelegateCommand<TParameters> : ICommand
     {
         private readonly Action<TParameters> _Action;
-        private readonly Func<TParameters, bool> _CanExecute;
+        private readonly Func<TParameters, bool>? _CanExecute;
 
-        public DelegateCommand(Action<TParameters> action, Func<TParameters, bool> canExecute)
+        public DelegateCommand(Action<TParameters> action, Func<TParameters, bool>? canExecute)
         {
             _Action = action;
             _CanExecute = canExecute;
@@ -62,13 +62,13 @@ namespace Thermostat
 
 
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         public bool CanExecute(object parameter)
         {
-            if (parameter is TParameters)
+            if (parameter is TParameters castParams)
             {
-                return _CanExecute.Invoke((TParameters)parameter);
+                return _CanExecute?.Invoke(castParams) ?? true;
             }
             else
             {
@@ -78,9 +78,9 @@ namespace Thermostat
 
         public void Execute(object parameter)
         {
-            if (parameter is TParameters)
+            if (parameter is TParameters castParams)
             {
-                _Action.Invoke((TParameters)parameter);
+                _Action.Invoke(castParams);
             }
             else
             {
