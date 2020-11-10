@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="Thermostat.HardwareVirtualization.VirtualHardwareView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Thermostat.HardwareVirtualization"
+             mc:Ignorable="d" 
+             d:DesignHeight="335.259" d:DesignWidth="330.412"
+             d:DataContext="{d:DesignInstance local:VirtualHardwareViewModel, IsDesignTimeCreatable=True}">
+    <Grid>
+        <StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="OutsideTemperature" />
+                <TextBox Text="{Binding OutdoorTemp}" MinWidth="50" Margin="5,0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Inside Temperature" />
+                <TextBlock Text="{Binding System.CurrentSensorValues.IndoorTemp, Mode=OneWay}" MinWidth="50" Margin="5,0"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="System Time" />
+                <TextBlock Text="{Binding Clock.Now, Mode=OneWay}" MinWidth="150" Margin="5,0"/>
+            </StackPanel>
+            
+            <Separator MinHeight="10" Foreground="{x:Null}" Background="{x:Null}" />
+            
+            <CheckBox Content="Cooling" IsChecked="{Binding System.CurrentSystemState.IsCooling, Mode=OneWay}" />
+            <CheckBox Content="Heating" IsChecked="{Binding System.CurrentSystemState.IsHeating, Mode=OneWay}" />
+            <CheckBox Content="AuxHeat" IsChecked="{Binding System.CurrentSystemState.IsAuxHeat, Mode=OneWay}" />
+            <CheckBox Content="FanRunning" IsChecked="{Binding System.CurrentSystemState.IsFanRunning, Mode=OneWay}" />
+
+            <Separator MinHeight="90" Foreground="{x:Null}" Background="{x:Null}" />
+
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Heat Transfer Rate (°/s)" />
+                <TextBox Text="{Binding System.HeatTransferRate}" Margin="5,0" MinWidth="40" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Time Multiplier" />
+                <Slider Value="{Binding Clock.TimeMultiplier}" Minimum="0" Maximum="5000" Interval="1" Width="100" Margin="5,0" />
+                <TextBox Text="{Binding Clock.TimeMultiplier, StringFormat=0.0}" MinWidth="50" Margin="5,0"/>
+            </StackPanel>
+            
+        </StackPanel>
+    </Grid>
+</UserControl>
